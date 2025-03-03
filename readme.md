@@ -10,6 +10,8 @@
 
 [协议文档](./docs/protocol.md)
 
+[URI 格式](./docs/uri_scheme.md)
+
 ## 快速食用方法
 
 ### 服务器

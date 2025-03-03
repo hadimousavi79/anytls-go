@@ -30,7 +30,7 @@ func handleTcpConnection(ctx context.Context, c net.Conn, s *myServer) {
 	b := buf.NewPacket()
 	defer b.Release()
 
-	_, err := b.ReadOnceFrom(c)
+	n, err := b.ReadOnceFrom(c)
 	if err != nil {
 		logrus.Debugln("ReadOnceFrom:", err)
 		return
@@ -39,13 +39,13 @@ func handleTcpConnection(ctx context.Context, c net.Conn, s *myServer) {
 
 	by, err := b.ReadBytes(32)
 	if err != nil || !bytes.Equal(by, passwordSha256) {
-		b.Reset()
+		b.Resize(0, n)
 		fallback(ctx, c)
 		return
 	}
 	by, err = b.ReadBytes(2)
 	if err != nil {
-		b.Reset()
+		b.Resize(0, n)
 		fallback(ctx, c)
 		return
 	}
@@ -53,7 +53,7 @@ func handleTcpConnection(ctx context.Context, c net.Conn, s *myServer) {
 	if paddingLen > 0 {
 		_, err = b.ReadBytes(int(paddingLen))
 		if err != nil {
-			b.Reset()
+			b.Resize(0, n)
 			fallback(ctx, c)
 			return
 		}
