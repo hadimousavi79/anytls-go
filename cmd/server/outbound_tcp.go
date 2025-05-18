@@ -6,32 +6,47 @@ import (
 	"net"
 
 	"github.com/sagernet/sing/common/bufio"
+	E "github.com/sagernet/sing/common/exceptions"
 	M "github.com/sagernet/sing/common/metadata"
+	N "github.com/sagernet/sing/common/network"
 	"github.com/sagernet/sing/common/uot"
 	"github.com/sirupsen/logrus"
 )
 
-func proxyOutboundTCP(ctx context.Context, conn net.Conn, destination M.Socksaddr) {
+func proxyOutboundTCP(ctx context.Context, conn net.Conn, destination M.Socksaddr) error {
 	c, err := proxy.SystemDialer.DialContext(ctx, "tcp", destination.String())
 	if err != nil {
 		logrus.Debugln("proxyOutboundTCP DialContext:", err)
-		return
+		err = E.Errors(err, N.ReportHandshakeFailure(conn, err))
+		return err
 	}
-	bufio.CopyConn(ctx, conn, c)
+
+	err = N.ReportHandshakeSuccess(conn)
+	if err != nil {
+		return err
+	}
+
+	return bufio.CopyConn(ctx, conn, c)
 }
 
-func proxyOutboundUoT(ctx context.Context, conn net.Conn, destination M.Socksaddr) {
+func proxyOutboundUoT(ctx context.Context, conn net.Conn, destination M.Socksaddr) error {
 	request, err := uot.ReadRequest(conn)
 	if err != nil {
 		logrus.Debugln("proxyOutboundUoT ReadRequest:", err)
-		return
+		return err
 	}
 
 	c, err := net.ListenPacket("udp", "")
 	if err != nil {
 		logrus.Debugln("proxyOutboundUoT ListenPacket:", err)
-		return
+		err = E.Errors(err, N.ReportHandshakeFailure(conn, err))
+		return err
 	}
 
-	bufio.CopyPacketConn(ctx, uot.NewConn(conn, *request), bufio.NewPacketConn(c))
+	err = N.ReportHandshakeSuccess(conn)
+	if err != nil {
+		return err
+	}
+
+	return bufio.CopyPacketConn(ctx, uot.NewConn(conn, *request), bufio.NewPacketConn(c))
 }

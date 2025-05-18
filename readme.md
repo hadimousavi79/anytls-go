@@ -1,6 +1,6 @@
 # AnyTLS
 
-一个试图专注于缓解 "TLS in TLS" 问题的 TLS 代理协议。`anytls-go` 是该协议的参考实现。
+一个试图缓解 嵌套的TLS握手指纹(TLS in TLS) 问题的代理协议。`anytls-go` 是该协议的参考实现。
 
 - 灵活的分包和填充策略
 - 连接复用，降低代理延迟
@@ -41,3 +41,7 @@ https://github.com/SagerNet/sing-box
 https://github.com/MetaCubeX/mihomo
 
 已合并至 Alpha 分支。它包含了 anytls 协议的服务器和客户端。
+
+### Shadowrocket
+
+Shadowrocket 2.2.65+ 实现了 anytls 协议的客户端。
